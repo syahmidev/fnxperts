@@ -16,6 +16,7 @@ relationships, Form Request validation, Action classes, and a public read-only J
 - **Employees CRUD** with a company relationship
 - Eloquent relationships: a company *has many* employees; an employee *belongs to* a company
 - **Soft deletes** on companies and employees (records are recoverable, not permanently removed)
+- **Trash management:** dedicated trashed listings with **restore** and **permanent delete**; restoring a company also restores the employees deleted alongside it
 - Validation via dedicated **Form Request** classes
 - State-changing logic isolated in **Action classes** (logo storage / replacement / cleanup in transactions)
 - **Laravel API Resources** with an `employee_count` attribute
@@ -243,6 +244,8 @@ Located in [`docs/screenshots/`](docs/screenshots):
 | Dashboard | `dashboard.png` |
 | Companies list | `companies-index.png` |
 | Companies pagination | `pagination.png` |
+| Trashed companies | `companies-trashed.png` |
+| Trashed employees | `employees-trashed.png` |
 | Company create form | `companies-form.png` |
 | Company details | `company-details.png` |
 | Employees list | `employees-index.png` |
@@ -281,7 +284,7 @@ Located in [`docs/screenshots/`](docs/screenshots):
 ```text
 app/
 ├── Actions/
-│   ├── Companies/{CreateCompany,UpdateCompany,DeleteCompany}.php
+│   ├── Companies/{CreateCompany,UpdateCompany,DeleteCompany,RestoreCompany,ForceDeleteCompany}.php
 │   └── Employees/{CreateEmployee,UpdateEmployee,DeleteEmployee}.php
 ├── Http/
 │   ├── Controllers/

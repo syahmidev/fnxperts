@@ -72,4 +72,32 @@ class EmployeeController extends Controller
             ->route('employees.index')
             ->with('success', 'Employee deleted successfully.');
     }
+
+    public function trashed(): View
+    {
+        $employees = Employee::onlyTrashed()
+            ->with(['company' => fn ($query) => $query->withTrashed()])
+            ->latest('deleted_at')
+            ->paginate(10);
+
+        return view('employees.trashed', compact('employees'));
+    }
+
+    public function restore(Employee $employee): RedirectResponse
+    {
+        $employee->restore();
+
+        return redirect()
+            ->route('employees.trashed')
+            ->with('success', 'Employee restored successfully.');
+    }
+
+    public function forceDestroy(Employee $employee): RedirectResponse
+    {
+        $employee->forceDelete();
+
+        return redirect()
+            ->route('employees.trashed')
+            ->with('success', 'Employee permanently deleted.');
+    }
 }

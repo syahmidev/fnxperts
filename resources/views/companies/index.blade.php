@@ -2,9 +2,14 @@
     <div class="flex h-full w-full flex-1 flex-col gap-6">
         <div class="flex items-center justify-between">
             <flux:heading size="xl">{{ __('Companies') }}</flux:heading>
-            <flux:button :href="route('companies.create')" variant="primary" icon="plus">
-                {{ __('New Company') }}
-            </flux:button>
+            <div class="flex items-center gap-2">
+                <flux:button :href="route('companies.trashed')" variant="ghost" icon="trash">
+                    {{ __('Trashed') }}
+                </flux:button>
+                <flux:button :href="route('companies.create')" variant="primary" icon="plus">
+                    {{ __('New Company') }}
+                </flux:button>
+            </div>
         </div>
 
         <x-flash />
