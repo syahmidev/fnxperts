@@ -129,15 +129,15 @@ test('replacing a logo removes the old logo', function () {
     Storage::disk('public')->assertExists($newLogo);
 });
 
-test('an administrator can delete a company', function () {
+test('an administrator can soft delete a company', function () {
     $company = Company::factory()->create();
 
     $this->delete(route('companies.destroy', $company))->assertRedirect(route('companies.index'));
 
-    $this->assertDatabaseMissing('companies', ['id' => $company->id]);
+    $this->assertSoftDeleted($company);
 });
 
-test('deleting a company removes its logo', function () {
+test('soft deleting keeps the logo but force deleting removes it', function () {
     Storage::fake('public');
 
     $company = Company::factory()->create();
@@ -148,20 +148,33 @@ test('deleting a company removes its logo', function () {
     $logo = $company->fresh()->logo;
     Storage::disk('public')->assertExists($logo);
 
+    // Soft delete retains the file so the record remains restorable.
     $this->delete(route('companies.destroy', $company));
+    Storage::disk('public')->assertExists($logo);
 
+    // Permanent deletion purges the file.
+    Company::withTrashed()->findOrFail($company->id)->forceDelete();
     Storage::disk('public')->assertMissing($logo);
 });
 
-test('deleting a company cascades to its employees', function () {
+test('deleting a company cascades a soft delete to its employees', function () {
     $company = Company::factory()->create();
     $employees = Employee::factory()->count(3)->for($company)->create();
 
     $this->delete(route('companies.destroy', $company));
 
     foreach ($employees as $employee) {
-        $this->assertDatabaseMissing('employees', ['id' => $employee->id]);
+        $this->assertSoftDeleted($employee);
     }
+});
+
+test('a soft-deleted company is hidden from the listing', function () {
+    $company = Company::factory()->create();
+    $company->delete();
+
+    $response = $this->get(route('companies.index'))->assertOk();
+
+    expect($response->viewData('companies')->contains($company))->toBeFalse();
 });
 
 test('the company listing shows 10 records per page', function () {

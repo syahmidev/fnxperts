@@ -60,6 +60,13 @@ test('a missing company returns 404', function () {
     $this->getJson('/api/companies/999999')->assertNotFound();
 });
 
+test('a soft-deleted company returns 404', function () {
+    $company = Company::factory()->create();
+    $company->delete();
+
+    $this->getJson(route('api.companies.show', $company))->assertNotFound();
+});
+
 test('logo_url is returned when a logo exists', function () {
     Storage::fake('public');
 

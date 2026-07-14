@@ -104,12 +104,12 @@ test('an administrator can update an employee', function () {
     expect($employee->fresh()->first_name)->toBe('New');
 });
 
-test('an administrator can delete an employee', function () {
+test('an administrator can soft delete an employee', function () {
     $employee = Employee::factory()->create();
 
     $this->delete(route('employees.destroy', $employee))->assertRedirect(route('employees.index'));
 
-    $this->assertDatabaseMissing('employees', ['id' => $employee->id]);
+    $this->assertSoftDeleted($employee);
 });
 
 test('the employee listing shows 10 records per page', function () {

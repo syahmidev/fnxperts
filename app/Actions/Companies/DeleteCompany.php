@@ -4,21 +4,17 @@ namespace App\Actions\Companies;
 
 use App\Models\Company;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
 
 final class DeleteCompany
 {
     public function handle(Company $company): void
     {
-        $logoPath = $company->logo;
-
         DB::transaction(function () use ($company): void {
-            // Related employees are removed by the foreign-key cascade.
+            // The database foreign-key cascade only fires on a hard delete, so
+            // the company's employees are soft-deleted explicitly here.
+            $company->employees()->delete();
+
             $company->delete();
         });
-
-        if ($logoPath !== null) {
-            Storage::disk('public')->delete($logoPath);
-        }
     }
 }

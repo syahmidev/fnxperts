@@ -15,6 +15,7 @@ relationships, Form Request validation, Action classes, and a public read-only J
 - **Companies CRUD** with logo upload (min. 100 × 100 px), stored on the public disk
 - **Employees CRUD** with a company relationship
 - Eloquent relationships: a company *has many* employees; an employee *belongs to* a company
+- **Soft deletes** on companies and employees (records are recoverable, not permanently removed)
 - Validation via dedicated **Form Request** classes
 - State-changing logic isolated in **Action classes** (logo storage / replacement / cleanup in transactions)
 - **Laravel API Resources** with an `employee_count` attribute
@@ -252,15 +253,21 @@ Located in [`docs/screenshots/`](docs/screenshots):
 
 ## Design decisions
 
-- **Cascade delete:** deleting a company also deletes its employees, enforced at the
-  database level via a foreign-key `cascadeOnDelete()` constraint.
+- **Soft deletes:** companies and employees use `SoftDeletes`, so deletes are recoverable.
+  Soft-deleted records are automatically excluded from listings, the dashboard, and the API
+  (route-model binding returns `404` for a soft-deleted company).
+- **Cascade delete:** deleting a company also deletes its employees. Because a soft delete is
+  an `UPDATE` (not a `DELETE`), the database foreign-key cascade does not fire, so the
+  `DeleteCompany` action soft-deletes the employees explicitly inside a transaction. The
+  foreign key still uses `cascadeOnDelete()`, which applies on a permanent `forceDelete()`.
 - **Logo storage:** company logos are stored on Laravel's `public` disk under
   `storage/app/public/companies`; only the relative path is persisted, and the public URL
   is generated with `Storage::disk('public')->url()`.
 - **Logo lifecycle in Actions:** create/update/delete logic lives in `App\Actions\Companies`
   so the controller stays thin. A new logo is stored before the DB write and rolled back on
-  failure; the previous logo is removed only after a successful update; a company's logo is
-  removed after it is deleted. Missing files are ignored safely.
+  failure; the previous logo is removed only after a successful update. On a **soft delete**
+  the logo file is **retained** (so the record stays restorable); it is purged only when the
+  company is permanently deleted (a `forceDeleted` model hook). Missing files are ignored safely.
 - **Public, read-only API:** the company API endpoint requires no authentication, per the
   assessment's allowance for this demo.
 - **Registration disabled:** the Fortify `registration` feature is removed, so the register
