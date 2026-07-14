@@ -14,15 +14,41 @@
 
         <x-flash />
 
+        @if ($companies->isNotEmpty() || $search)
+            <form method="GET" action="{{ route('companies.index') }}" class="flex items-center gap-2">
+                <flux:input
+                    type="search"
+                    name="search"
+                    icon="magnifying-glass"
+                    :value="$search"
+                    :placeholder="__('Search by name, email or website...')"
+                    class="max-w-sm"
+                />
+                <flux:button type="submit" variant="primary">{{ __('Search') }}</flux:button>
+                @if ($search)
+                    <flux:button :href="route('companies.index')" variant="ghost">{{ __('Clear') }}</flux:button>
+                @endif
+            </form>
+        @endif
+
         @if ($companies->isEmpty())
-            <div class="flex flex-col items-center justify-center gap-3 rounded-xl border border-dashed border-neutral-300 py-16 dark:border-neutral-700">
-                <flux:icon.building-office-2 class="size-10 text-neutral-400" />
-                <flux:heading size="lg">{{ __('No companies yet') }}</flux:heading>
-                <flux:text>{{ __('Get started by creating your first company.') }}</flux:text>
-                <flux:button :href="route('companies.create')" variant="primary" class="mt-2">
-                    {{ __('New Company') }}
-                </flux:button>
-            </div>
+            @if ($search)
+                <div class="flex flex-col items-center justify-center gap-3 rounded-xl border border-dashed border-neutral-300 py-16 dark:border-neutral-700">
+                    <flux:icon.magnifying-glass class="size-10 text-neutral-400" />
+                    <flux:heading size="lg">{{ __('No results') }}</flux:heading>
+                    <flux:text>{{ __('No companies match') }} “{{ $search }}”.</flux:text>
+                    <flux:button :href="route('companies.index')" variant="ghost" class="mt-2">{{ __('Clear search') }}</flux:button>
+                </div>
+            @else
+                <div class="flex flex-col items-center justify-center gap-3 rounded-xl border border-dashed border-neutral-300 py-16 dark:border-neutral-700">
+                    <flux:icon.building-office-2 class="size-10 text-neutral-400" />
+                    <flux:heading size="lg">{{ __('No companies yet') }}</flux:heading>
+                    <flux:text>{{ __('Get started by creating your first company.') }}</flux:text>
+                    <flux:button :href="route('companies.create')" variant="primary" class="mt-2">
+                        {{ __('New Company') }}
+                    </flux:button>
+                </div>
+            @endif
         @else
             <div class="overflow-x-auto rounded-xl border border-neutral-200 dark:border-neutral-700">
                 <table class="w-full text-left text-sm">

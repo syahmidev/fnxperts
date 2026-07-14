@@ -120,6 +120,28 @@ test('the employee listing shows 10 records per page', function () {
     expect($response->viewData('employees')->count())->toBe(10);
 });
 
+test('the employee listing can be filtered by name', function () {
+    $match = Employee::factory()->create(['first_name' => 'Alexander', 'last_name' => 'Ng']);
+    $other = Employee::factory()->create(['first_name' => 'Beatrice', 'last_name' => 'Lim']);
+
+    $response = $this->get(route('employees.index', ['search' => 'alex']))->assertOk();
+
+    $ids = $response->viewData('employees')->pluck('id');
+    expect($ids)->toContain($match->id)->not->toContain($other->id);
+});
+
+test('the employee listing can be filtered by company name', function () {
+    $acme = Company::factory()->create(['name' => 'Acme Robotics']);
+    $globex = Company::factory()->create(['name' => 'Globex Industries']);
+    $match = Employee::factory()->for($acme)->create();
+    $other = Employee::factory()->for($globex)->create();
+
+    $response = $this->get(route('employees.index', ['search' => 'robotics']))->assertOk();
+
+    $ids = $response->viewData('employees')->pluck('id');
+    expect($ids)->toContain($match->id)->not->toContain($other->id);
+});
+
 test('the employee listing displays the related company', function () {
     $company = Company::factory()->create(['name' => 'Globex Corporation']);
     Employee::factory()->for($company)->create();

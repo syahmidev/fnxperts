@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Database\Factories\CompanyFactory;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -43,6 +44,28 @@ class Company extends Model
     public function employees(): HasMany
     {
         return $this->hasMany(Employee::class);
+    }
+
+    /**
+     * Filter companies by a case-insensitive term across name, email and website.
+     *
+     * @param  Builder<Company>  $query
+     */
+    public function scopeSearch(Builder $query, ?string $term): void
+    {
+        $term = trim((string) $term);
+
+        if ($term === '') {
+            return;
+        }
+
+        $like = '%'.mb_strtolower($term).'%';
+
+        $query->where(function (Builder $query) use ($like): void {
+            $query->whereRaw('lower(name) like ?', [$like])
+                ->orWhereRaw('lower(email) like ?', [$like])
+                ->orWhereRaw('lower(website) like ?', [$like]);
+        });
     }
 
     /**

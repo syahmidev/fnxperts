@@ -185,6 +185,34 @@ test('the company listing shows 10 records per page', function () {
     expect($response->viewData('companies')->count())->toBe(10);
 });
 
+test('the company listing can be filtered by a search term', function () {
+    $match = Company::factory()->create(['name' => 'Acme Robotics']);
+    $other = Company::factory()->create(['name' => 'Globex Industries']);
+
+    $response = $this->get(route('companies.index', ['search' => 'robot']))->assertOk();
+
+    $ids = $response->viewData('companies')->pluck('id');
+    expect($ids)->toContain($match->id)->not->toContain($other->id);
+});
+
+test('search matches company email', function () {
+    $match = Company::factory()->create(['email' => 'hello@needle.test']);
+    Company::factory()->create(['email' => 'nope@haystack.test']);
+
+    $response = $this->get(route('companies.index', ['search' => 'NEEDLE']))->assertOk();
+
+    expect($response->viewData('companies')->pluck('id'))->toContain($match->id)->toHaveCount(1);
+});
+
+test('the search term is preserved across pagination links', function () {
+    Company::factory()->count(15)->create(['name' => 'Searchable Co']);
+
+    $response = $this->get(route('companies.index', ['search' => 'Searchable']))->assertOk();
+
+    expect($response->viewData('companies')->count())->toBe(10);
+    $response->assertSee('search=Searchable', false);
+});
+
 test('the company listing includes employee counts', function () {
     $company = Company::factory()->create();
     Employee::factory()->count(4)->for($company)->create();

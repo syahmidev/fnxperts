@@ -11,17 +11,22 @@ use App\Models\Company;
 use App\Models\Employee;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 
 class EmployeeController extends Controller
 {
-    public function index(): View
+    public function index(Request $request): View
     {
+        $search = $request->string('search')->trim()->toString() ?: null;
+
         $employees = Employee::query()
+            ->search($search)
             ->with('company')
             ->latest()
-            ->paginate(10);
+            ->paginate(10)
+            ->withQueryString();
 
-        return view('employees.index', compact('employees'));
+        return view('employees.index', compact('employees', 'search'));
     }
 
     public function create(): View

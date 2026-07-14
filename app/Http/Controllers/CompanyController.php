@@ -12,17 +12,22 @@ use App\Http\Requests\UpdateCompanyRequest;
 use App\Models\Company;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 
 class CompanyController extends Controller
 {
-    public function index(): View
+    public function index(Request $request): View
     {
+        $search = $request->string('search')->trim()->toString() ?: null;
+
         $companies = Company::query()
+            ->search($search)
             ->withCount('employees')
             ->latest()
-            ->paginate(10);
+            ->paginate(10)
+            ->withQueryString();
 
-        return view('companies.index', compact('companies'));
+        return view('companies.index', compact('companies', 'search'));
     }
 
     public function create(): View

@@ -20,6 +20,8 @@ relationships, Form Request validation, Action classes, and a public read-only J
 - Validation via dedicated **Form Request** classes
 - State-changing logic isolated in **Action classes** (logo storage / replacement / cleanup in transactions)
 - **Laravel API Resources** with an `employee_count` attribute
+- **Search filter** on both listings (case-insensitive; companies by name/email/website,
+  employees by name/full name/email/phone/company name) with the term preserved across pagination
 - Pagination at **10 records per page** for both listings
 - Feature test suite (**Pest**) covering auth, CRUD, validation, logo lifecycle, cascade delete, pagination, and the API
 - Database factories and seeders (seeded admin + 15 companies + 40 employees)
@@ -243,6 +245,7 @@ Located in [`docs/screenshots/`](docs/screenshots):
 | Login | `login.png` |
 | Dashboard | `dashboard.png` |
 | Companies list | `companies-index.png` |
+| Companies search | `companies-search.png` |
 | Companies pagination | `pagination.png` |
 | Trashed companies | `companies-trashed.png` |
 | Trashed employees | `employees-trashed.png` |
